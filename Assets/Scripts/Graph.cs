@@ -9,66 +9,57 @@ using UnityEngine.UI;
 
 public class Graph : MonoBehaviour
 {
+    [SerializeField]
     public GameObject nodeObj;
+    [SerializeField]
     public List<Node> nodes;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
-    private void OnDrawGizmos()
-    {
-        
-    }
 }
 
 
 [CustomEditor(typeof(Graph))]
 public class GraphEditor : Editor
 {
-    [SerializeField]
-    Bounds bounds = new Bounds();
+
+    //Hacky fix because of the desire to render both the graph editor, and any child editors.
+    Graph graph {  get { return GetGraph(); } }
+    Graph GetGraph()
+    {
+        if (target.GetType() == typeof(Graph))
+        {
+            return (Graph)target;
+        }
+        else
+        {
+            return target.GetComponentInParent<Graph>();
+        }
+    }
+
 
     private void OnEnable()
     {
-        Graph graph = (Graph)target;
-        bounds = new Bounds(graph.transform.position, Vector3.one);
+
     }
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        Graph graph = (Graph)target;
 
         if (GUILayout.Button("New Node"))
         {
-            GameObject added = Instantiate(graph.nodeObj, bounds.center + Random.insideUnitSphere, Quaternion.identity, graph.transform);
+            GameObject added = Instantiate(graph.nodeObj, target.GameObject().transform.position + Random.insideUnitSphere, Quaternion.identity, graph.transform);
             graph.nodes.Add(added.GetComponent<Node>());
+            Selection.activeGameObject = added;
         }
 
     }
 
-    private void OnSceneGUI()
+    protected void OnSceneGUI()
     {
-        Graph graph = (Graph)target;
-
-
         Handles.color = Color.yellow; 
-        Handles.DrawWireCube(bounds.center, bounds.size);
         
-
         foreach (Node node in graph.nodes)
         {
-            bounds.Encapsulate(node.transform.position);
 
             Handles.color = Color.red;
             Handles.DrawWireDisc(node.transform.position, node.transform.position - SceneView.GetAllSceneCameras()[0].transform.position, 0.2f);
