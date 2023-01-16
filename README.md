@@ -13,8 +13,3 @@ Just messing around with Unity Inspectors and Graphs.
 * BFS and Dijstra's Algorithm on a source node:
 
 ![image](https://user-images.githubusercontent.com/97647743/212582639-5fcf6259-eac9-4824-9542-ccaceec1796f.png)
-
-* License:
-
-Public Domain CC0
-Use at your own risk.
