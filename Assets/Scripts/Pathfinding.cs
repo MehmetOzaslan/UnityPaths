@@ -4,55 +4,68 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.PlasticSCM.Editor.WebApi;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 using static Unity.VisualScripting.Member;
 
-public class Pathfinding : MonoBehaviour
+public class Pathfinding
 {
 
     /*
      * https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Algorithm
      */
 
-    Dictionary<Node,Node> Dikjstras(Graph graph, Node source)
+    public static Dictionary<Node,Node> Dikjstras(Node source)
     {
-        HashSet<Node> unvisited = new HashSet<Node>();
+
+        //Psuedo-minheap
+        ISet<Node> unvisited = new HashSet<Node>();
         Dictionary<Node, float> distanceMap = new Dictionary<Node, float>();
         Dictionary<Node, Node> parent = new Dictionary<Node, Node>();
-        
+
+
+        //Run BFS to get nodes so we don't have to pass in a graph.
+        Dictionary<Node, Node> bfsTree = BFS(source);
+
+
         //Initialization
-        distanceMap[source] = 0;
-        Node current = source;
-        foreach (Node node in graph.nodes)
+        foreach (Node node in bfsTree.Keys)
         {
             distanceMap[node] = float.MaxValue;
             unvisited.Add(node);
             parent[node] = null;
         }
+        distanceMap[source] = 0;
+
+
 
         //Primary steps of the algorthm
         while (unvisited.Count > 0)
         {
+            Node minNode = null;
             //Ideally P-Queue here
-            foreach (Node minNode in unvisited)
+            foreach (Node comparedNode in unvisited)
             {
-                if (distanceMap[minNode] < distanceMap[current])
+                if(minNode == null)
                 {
-                    current = minNode;
+                    minNode = comparedNode;
+                }
+                else if (distanceMap[comparedNode] < distanceMap[minNode])
+                {
+                    minNode = comparedNode;
                 }
             }
-            unvisited.Remove(current);
+            unvisited.Remove(minNode);
 
-            foreach (Node other in current.connections)
+
+            foreach (Node other in minNode.connections)
             {
-                float otherDist = current.GetEdgeWeight(other) + distanceMap[current];
+                float otherDist = minNode.GetEdgeWeight(other) + distanceMap[minNode];
                 //Assign the smaller distance
                 if (otherDist < distanceMap[other])
                 {
                     distanceMap[other] = otherDist;
-                    parent[other] = current;
+                    parent[other] = minNode;
                 }
             }
         }
@@ -63,7 +76,7 @@ public class Pathfinding : MonoBehaviour
     /*
      * To get the path from the tree of BFS.
      */
-    List<Node> BacktracePredmap(Dictionary<Node, Node> parent, Node from, Node to)
+    public static List<Node> BacktracePredmap(Dictionary<Node, Node> parent, Node from, Node to)
     {
         List<Node> path = new List<Node>() { to };
         while (path[path.Count - 1] != from)
@@ -74,7 +87,29 @@ public class Pathfinding : MonoBehaviour
         return path;
     }
 
-    Dictionary<Node, Node> BFS(Node from, Node to)
+    public static Dictionary<Node, Node> BFS(Node source)
+    {
+        Dictionary<Node, Node> predmap = new Dictionary<Node, Node>();
+        Queue<Node> q = new Queue<Node>();
+
+        q.Enqueue(source);
+        while (q.Count > 0)
+        {
+            Node currNode = q.Dequeue();
+            foreach (Node node in currNode.connections)
+            {
+                if (!predmap.ContainsKey(node))
+                {
+                    predmap[node] = currNode;
+                    q.Enqueue(node);
+                }
+            }
+        }
+
+        return predmap;
+    }
+
+    public static Dictionary<Node, Node> BFS(Node from, Node to)
     {
         Dictionary<Node, Node> parent = new Dictionary<Node, Node>();
         Queue<Node> q = new Queue<Node>();
@@ -97,10 +132,10 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        return null;
+        return parent;
     }
 
-    Dictionary<Node, Node> BFS(Node from, System.Func<bool> reachedCondition)
+    public static Dictionary<Node, Node> BFS(Node from, System.Func<bool> reachedCondition)
     {
         Dictionary<Node, Node> parent = new Dictionary<Node, Node>();
         Queue<Node> q = new Queue<Node>();
@@ -123,7 +158,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        return null;
+        return parent;
     }
 
     // Start is called before the first frame update

@@ -10,7 +10,7 @@ public class Node : MonoBehaviour, IComparable
     public List<Node> connections = new List<Node>();
 
     public int CompareTo(object obj)
-    {
+    { 
         if (obj.GetType() == typeof(Node))
         {
             return (int)GetEdgeWeight((Node)obj);
@@ -46,10 +46,9 @@ public class NodeEditor : GraphEditor
         serializedObject.Update();
         EditorGUILayout.PropertyField(connections);
         serializedObject.ApplyModifiedProperties();
-
     }
 
-    public new void OnSceneGUI()
+    protected new void OnSceneGUI()
     {
         base.OnSceneGUI();
 

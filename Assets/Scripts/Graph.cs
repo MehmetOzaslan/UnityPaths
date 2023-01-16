@@ -13,7 +13,6 @@ public class Graph : MonoBehaviour
     public GameObject nodeObj;
     [SerializeField]
     public List<Node> nodes;
-
 }
 
 
@@ -23,6 +22,7 @@ public class GraphEditor : Editor
 
     //Hacky fix because of the desire to render both the graph editor, and any child editors.
     Graph graph {  get { return GetGraph(); } }
+    
     Graph GetGraph()
     {
         if (target.GetType() == typeof(Graph))
@@ -33,12 +33,6 @@ public class GraphEditor : Editor
         {
             return target.GetComponentInParent<Graph>();
         }
-    }
-
-
-    private void OnEnable()
-    {
-
     }
 
     public override void OnInspectorGUI()
